@@ -3,7 +3,7 @@ use std::{fmt, fs};
 use std::path::Path;
 
 fn main() {
-    let path = Path::new("./src/bin/day5-input.txt");
+    let path = Path::new("./src/bin/inputs/day5-input.txt");
     let contents = fs::read_to_string(path)
         .expect("Could not read the file");
 
