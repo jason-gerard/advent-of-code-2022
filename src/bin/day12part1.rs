@@ -1,8 +1,9 @@
+use std::collections::VecDeque;
 use std::fs;
 use std::path::Path;
 
 fn main() {
-    let path = Path::new("./src/bin/inputs/day12-input-test.txt");
+    let path = Path::new("./src/bin/inputs/day12-input.txt");
     let contents = fs::read_to_string(path)
         .expect("Could not read the file");
     
@@ -50,16 +51,16 @@ fn main() {
         map.push(map_row);
     }
     
-    let mut stack = Vec::<Vec<Point>>::new();
-    stack.push(vec![start_point.clone()]);
+    let mut queue = VecDeque::<Vec<Point>>::new();
+    queue.push_back(vec![start_point.clone()]);
     
     // path length when point was visited
     let mut visited = Vec::<(Point, usize)>::new();
     
     let mut paths = Vec::<Vec<Point>>::new();
     
-    while !stack.is_empty() {
-        let mut path = stack.pop().unwrap();
+    while !queue.is_empty() {
+        let mut path = queue.pop_front().unwrap();
         let curr_point = path.pop().unwrap();
         
         if curr_point == end_point {
@@ -79,7 +80,22 @@ fn main() {
         } else {
             visited.push((curr_point.clone(), path.len()+1));
         }
-        
+
+        if curr_point.col+1 < map[0].len() && curr_point.height+1 >= map[curr_point.row][curr_point.col+1] {
+            let mut new_path = Vec::<Point>::new();
+            for point in path.clone() {
+                new_path.push(point.clone());
+            }
+            new_path.push(curr_point.clone());
+            let new_point = Point {
+                row: curr_point.row,
+                col: curr_point.col+1,
+                height: map[curr_point.row][curr_point.col+1],
+            };
+            new_path.push(new_point.clone());
+
+            queue.push_back(new_path);
+        }
         if curr_point.row >= 1 && curr_point.height+1 >= map[curr_point.row-1][curr_point.col] {
             let mut new_path = Vec::<Point>::new();
             for point in path.clone() {
@@ -93,7 +109,7 @@ fn main() {
             };
             new_path.push(new_point.clone());
 
-            stack.push(new_path);
+            queue.push_back(new_path);
         }
         if curr_point.row+1 < map.len() && curr_point.height+1 >= map[curr_point.row+1][curr_point.col] {
             let mut new_path = Vec::<Point>::new();
@@ -108,7 +124,7 @@ fn main() {
             };
             new_path.push(new_point.clone());
 
-            stack.push(new_path);
+            queue.push_back(new_path);
         }
         if curr_point.col >= 1 && curr_point.height+1 >= map[curr_point.row][curr_point.col-1] {
             let mut new_path = Vec::<Point>::new();
@@ -123,22 +139,7 @@ fn main() {
             };
             new_path.push(new_point.clone());
 
-            stack.push(new_path);
-        }
-        if curr_point.col+1 < map[0].len() && curr_point.height+1 >= map[curr_point.row][curr_point.col+1] {
-            let mut new_path = Vec::<Point>::new();
-            for point in path.clone() {
-                new_path.push(point.clone());
-            }
-            new_path.push(curr_point.clone());
-            let new_point = Point {
-                row: curr_point.row,
-                col: curr_point.col+1,
-                height: map[curr_point.row][curr_point.col+1],
-            };
-            new_path.push(new_point.clone());
-
-            stack.push(new_path);
+            queue.push_back(new_path);
         }
     }
     
@@ -150,7 +151,7 @@ fn main() {
         .min()
         .unwrap();
     
-    println!("{} number of steps", min);
+    println!("{} number of steps", min - 1);
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
